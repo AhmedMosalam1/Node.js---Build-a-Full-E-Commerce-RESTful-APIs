@@ -18,6 +18,7 @@ const ApiError = require('./utils/appError')
 const GlobalError = require("./middleware/errorMiddleware")
 
 const mountRoutes = require('./routes/app')
+const { webhookCheckout } = require("./controllers/orderController");
 
 // Connection Database
 db()
@@ -26,29 +27,30 @@ db()
 const app = express();
 
 app.use(cors())
-app.options("*",cors())
+app.options("*", cors())
 
 app.use(compression())
 
+app.post('/webhook-checkout', express.raw({ type: 'application/json' }), webhookCheckout)
 
-//Middleware
-app.use(express.json({limit:"25kb"}))
-app.use(express.static(path.join(__dirname, 'uploads')));
+  //Middleware
+  app.use(express.json({ limit: "25kb" }))
+  app.use(express.static(path.join(__dirname, 'uploads')));
 
-if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'))
-}
+  }
 
-app.use(mongoSanitizer())
-app.use(xss())
-///limit request
-const limiter = Limit({
+  app.use(mongoSanitizer())
+  app.use(xss())
+  ///limit request
+  const limiter = Limit({
     max: 50,
     windowMs: 15 * 60 * 1000, //15 minute
     message: "too many requests from this ip , please try again in an hour"
   })
-  
-  app.use('/api',limiter);
+
+  app.use('/api', limiter);
 
   //middleware to protect against HTTP Parameters Pollution attacks
   app.use(
@@ -64,32 +66,32 @@ const limiter = Limit({
   );
 
 
-//Routes
-mountRoutes(app)
+  //Routes
+  mountRoutes(app)
 
-app.all('*', (req, res, next) => {
+  app.all('*', (req, res, next) => {
 
     next(new ApiError(`Can't find ${req.originalUrl} on this server`, 400));
-})
+  })
 
 
-//Global Erroe Handling Middleware
-app.use(GlobalError)
+  //Global Erroe Handling Middleware
+  app.use(GlobalError)
 
 
-const port = process.env.PORT || 8000
-const server = app.listen(port, () => {
+  const port = process.env.PORT || 8000
+  const server = app.listen(port, () => {
     console.log('server running')
-})
+  })
 
 
-//Catch Error Outsied Express and Control it(Handle)
-//Event ==> Listen ==> Callback(err)
+  //Catch Error Outsied Express and Control it(Handle)
+  //Event ==> Listen ==> Callback(err)
 
-process.on('unhandledRejection', err => {
+  process.on('unhandledRejection', err => {
     console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
     console.log(`${err.name}  ||  ${err.message}`);
     server.close(() => {
-        process.exit(1)
+      process.exit(1)
     })
-})
+  })
