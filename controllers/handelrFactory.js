@@ -21,7 +21,7 @@ exports.deleteOne = (model) => catchAsync(async (req, res, next) => {
 
 exports.deleteAll = (model) => catchAsync(async (req, res, next) => {
 
-    await model.findByIdAndDelete(id)
+    await model.remove()
 
     res.status(201).json({
         status: "Delete All Successfully",
