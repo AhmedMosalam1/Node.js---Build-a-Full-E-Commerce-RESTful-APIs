@@ -40,9 +40,9 @@ const setImageURL = (doc) => {
   // });
   
   // create
-  brandSchema.post('save', (doc) => {
-    setImageURL(doc);
-  });
+  // brandSchema.post('save', (doc) => {
+  //   setImageURL(doc);
+  // });
   
 
 const brandModel = mongoose.model('Brand',brandSchema); 
